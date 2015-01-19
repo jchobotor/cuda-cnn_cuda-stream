@@ -60,6 +60,38 @@
     }
 </code></pre>
 
+<p>Here is a function copy the host memory to device memory using cuda-streams</p>
+
+<pre><code>void getBatchImageWithStreams(cuMatrixVector&lt;double&gt;&amp;x, cuMatrixVector&lt;double&gt;&amp;batchImg, int start, cudaStream_t stream1){
+     for(int i = 0; i &lt; batchImg.size(); i++){
+         memcpy(batchImg[i]-&gt;hostData, x[i + start]-&gt;hostData, sizeof(double) * batchImg[i]-&gt;getLen());
+         batchImg[i]-&gt;toGpu(stream1);
+     }
+}
+
+</code></pre>
+
+<p>Now I shows the way to use these double buffers.</p>
+
+<pre><code>1. getBatchImageWithStreams(x, batchImg[0], 0, stream1);
+2. int batchImgId = 1;
+3. for (int k = 0; k &lt;= x.size() - batch; k += batch) {
+4.    cudaStreamSynchronize(stream1);
+5.    int start = k;
+6.    printf("train %2d%%", 100 * k / ((x.size() + batch - 1)));
+7.    if(start + batch &lt;= x.size() - batch)
+8.  getBatchImageWithStreams(x, batchImg[batchImgId], start + batch, stream1);
+9.    batchImgId = 1 - batchImgId;
+10. }
+</code></pre>
+
+<p>As the code shows, line-4 synchronize the first buffer to device, than line-8 copy the next batch to the device. We can find the line-8's transfers will concurrent with the following kernel functions.</p>
+
+<h1>
+<a id="the-result" class="anchor" href="#the-result" aria-hidden="true"><span class="octicon octicon-link"></span></a>The result:</h1>
+
+<p>Now the CIFAR-10 dataset can run in the computer with 2G device memory, the every epoch's running time decline frome 28 seconds to 24 seconds. </p>
+
 <h3>
 <a id="support-or-contact" class="anchor" href="#support-or-contact" aria-hidden="true"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
 
