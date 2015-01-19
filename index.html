@@ -52,7 +52,6 @@
 
 <pre><code>cuMatrixVector&lt;double&gt;batchImg[2];
 /*double buffer for batch images*/
-int crop = Config::instance()-&gt;getCrop();
     for(int i = 0; i &lt; 2; i ++){
         for(int j = 0; j &lt; batch; j++){
             batchImg[i].push_back(new cuMatrix&lt;double&gt;(ImgSize + crop, ImgSize + crop, Config::instance()-&gt;getChannels()));
