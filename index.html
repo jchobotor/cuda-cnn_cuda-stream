@@ -46,8 +46,20 @@
 <pre><code>$ git clone https://github.com/zhxfl/CUDA-CNN.git   
 </code></pre>
 
-<p>The first version of my project was only designed for MNIST which is a small and simply dataset, so we copy all the data to device memory.<br>
-  As the size of dataset increase, now I just want to use "batch size" of the image on the device. Before every epoch I should copy the data from host memory to device memory, so I need the Cuda-Stream technology to concurrent device memory transmission and calculation. </p>
+<p>The first version of my project was only designed for MNIST which is a small and simply dataset, so we copy all the data to device memory.  As the size of dataset increase, now I just want to keep "batch size" of the image on the device. Before every epoch I should copy the data from host memory to device memory, so I need the Cuda-Stream technology to concurrent device memory transmission and calculation. </p>
+
+<p>In order to using cuda-streams, I need double buffers:</p>
+
+<pre><code>cuMatrixVector&lt;double&gt;batchImg[2];
+/*double buffer for batch images*/
+int crop = Config::instance()-&gt;getCrop();
+    for(int i = 0; i &lt; 2; i ++){
+        for(int j = 0; j &lt; batch; j++){
+            batchImg[i].push_back(new cuMatrix&lt;double&gt;(ImgSize + crop, ImgSize + crop, Config::instance()-&gt;getChannels()));
+        }
+        batchImg[i].toGpu();
+    }
+</code></pre>
 
 <h3>
 <a id="support-or-contact" class="anchor" href="#support-or-contact" aria-hidden="true"><span class="octicon octicon-link"></span></a>Support or Contact</h3>
